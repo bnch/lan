@@ -1,0 +1,121 @@
+ID: 2, Name: OsuExit
+OsuExit is sent by the osu! client whenever the client closes
+
+- Reason int32, 0 if closing, 1 if updating
+-------------------------------------------------------------------------------
+ID: 5, Name: BanchoLoginReply
+BanchoLoginReply is a packet containing either an user ID or an authentication
+error (see handler/authenticate.go).
+
+- UserID int32, may have negative values
+-------------------------------------------------------------------------------
+ID: 11, Name: BanchoHandleUserUpdate
+BanchoHandleUserUpdate contains all the information about an user you will ever
+need.
+
+- ID int32
+- Action uint8, afk, modding, playing, osudirect...
+- ActionText string
+- ActionMapMD5 string
+- ActionMods int32
+- ActionGameMode uint8
+- ActionBeatmapID uint32
+- RankedScore uint64
+- Accuracy float64, 0.1337 = 13.37%
+- Playcount int32
+- TotalScore uint64
+- Rank int32
+- PP uint16
+-------------------------------------------------------------------------------
+ID: 24, Name: BanchoAnnounce
+BanchoAnnounce is sent by bancho to notify the osu! clients of something.
+
+- Message string
+-------------------------------------------------------------------------------
+ID: 63, Name: OsuChannelJoin
+OsuChannelJoin is sent by the osu! client whenever it wishes to join a channel.
+
+- Channel string
+-------------------------------------------------------------------------------
+ID: 64, Name: BanchoChannelJoinSuccess
+BanchoChannelJoinSuccess is sent by the server the client has successfully
+joined a channel.
+
+- Channel string
+-------------------------------------------------------------------------------
+ID: 65, Name: BanchoChannelAvailable
+BanchoChannelAvailable is sent by the server to inform the osu! client about
+the existance of a channel. For channels where the user auto-joins,
+BanchoChannelAvailableAutojoin is used instead.
+
+- Channel string
+- Description string
+- Users uint16
+-------------------------------------------------------------------------------
+ID: 66, Name: BanchoChannelRevoked
+BanchoChannelRevoked is sent by the server to the osu! client to get the fuck
+out of a channel.
+
+- Channel string
+-------------------------------------------------------------------------------
+ID: 67, Name: BanchoChannelAvailableAutojoin
+BanchoChannelAvailableAutojoin tells the user about a channel, straight before
+adding them to it. I don't quite understand why this is a thing, but whatever.
+
+- Channel string
+-------------------------------------------------------------------------------
+ID: 71, Name: BanchoLoginPermissions
+BanchoLoginPermissions are the privileges assigned to the user.
+
+- Permissions int32
+-------------------------------------------------------------------------------
+ID: 72, Name: BanchoFriendList
+BanchoFriendList is a list of the friend of the user.
+
+- Friends []int32
+-------------------------------------------------------------------------------
+ID: 75, Name: BanchoProtocolVersion
+BanchoProtocolVersion is the version of the bancho protocol, which is sent to
+the client at login.
+
+- Version int32
+-------------------------------------------------------------------------------
+ID: 83, Name: BanchoUserPresence
+BanchoUserPresence tells the client basic information about a certain user.
+
+- ID int32
+- Name string
+- UTCOffset uint8, 24 looks like a good value
+- Country uint8
+- Privileges uint8
+- Longitude float32
+- Latitude float32
+- Rank int32
+-------------------------------------------------------------------------------
+ID: 89, Name: BanchoChannelListingComplete
+BanchoChannelListingComplete says the channel listing has been completed.
+-------------------------------------------------------------------------------
+ID: 92, Name: BanchoBanInfo
+BanchoBanInfo tells the client information about the lenght of the silence for
+the user.
+
+- Seconds int32
+-------------------------------------------------------------------------------
+ID: 94, Name: BanchoUserSilenced
+BanchoUserSilenced is sent when an user (specified by its ID) is silenced,
+so that their messages are cleared.
+
+- ID int32
+-------------------------------------------------------------------------------
+ID: 95, Name: BanchoUserPresenceSingle
+BanchoUserPresenceSingle is used to broadcasts to users about when an user
+comes online.
+
+- ID int32
+-------------------------------------------------------------------------------
+ID: 96, Name: BanchoUserPresenceBundle
+BanchoUserPresenceBundle is used to initially broadcast to an user the users
+currently online on the server.
+
+- IDs []int32
+-------------------------------------------------------------------------------
