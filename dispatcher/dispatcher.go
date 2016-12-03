@@ -4,7 +4,6 @@ package dispatcher
 
 import (
 	"compress/gzip"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -24,7 +23,6 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 
 // ServeHTTP handles the requests.
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("IBMD")
 	if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 		s.switcher(w, r)
 		return
