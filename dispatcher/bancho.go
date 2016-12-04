@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"fmt"
@@ -16,6 +17,8 @@ import (
 
 func (s Server) bancho(w http.ResponseWriter, r *http.Request) {
 	begin := time.Now()
+
+	defer panicRecover()
 
 	if r.Method != "POST" || r.UserAgent() != "osu!" {
 		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
@@ -32,7 +35,7 @@ func (s Server) bancho(w http.ResponseWriter, r *http.Request) {
 		br := bufio.NewReader(r.Body)
 		u, _ := br.ReadString('\n')
 		p, _ := br.ReadString('\n')
-		sess = handler.Authenticate(u, p)
+		sess = handler.Authenticate(strings.TrimSpace(u), strings.TrimSpace(p))
 	} else {
 		sess = handler.Sessions.GetByToken(tok)
 		if sess == nil {
@@ -68,3 +71,10 @@ Looper:
 }
 
 var dumper = banchoreader.New()
+
+func panicRecover() {
+	err := recover()
+	if err != nil {
+		fmt.Printf("Critical error! %v\n", err)
+	}
+}
