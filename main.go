@@ -14,12 +14,10 @@ import (
 const version = "0.0.1"
 
 var c = struct {
-	BanchoWorkers int
 	Port          string
 	AdminPassword string `description:"The plaintext password of the admin user. Make this very long! If empty, it will be automatically generated."`
 }{
-	BanchoWorkers: 16,
-	Port:          ":80",
+	Port: ":80",
 }
 
 func main() {
