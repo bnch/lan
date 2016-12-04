@@ -24,3 +24,26 @@ func (s *Session) SendUsers() {
 	}
 	s.Send(&packets.BanchoUserPresenceBundle{chunk})
 }
+
+// ToUserPresence converts a session to a packets.BanchoUserPresence
+func (s *Session) ToUserPresence() *packets.BanchoUserPresence {
+	return &packets.BanchoUserPresence{
+		ID:         s.UserID,
+		Name:       s.Username,
+		UTCOffset:  24,
+		Country:    0,
+		Privileges: uint8(s.Permissions()),
+		Rank:       s.UserID,
+	}
+}
+
+// ToHandleUserUpdate converts a session to a packets.BanchoHandleUserUpdate
+func (s *Session) ToHandleUserUpdate() *packets.BanchoHandleUserUpdate {
+	return &packets.BanchoHandleUserUpdate{
+		ID:          s.UserID,
+		Action:      packets.StatusIdle,
+		RankedScore: 0,
+		TotalScore:  0,
+		Rank:        s.UserID,
+	}
+}
