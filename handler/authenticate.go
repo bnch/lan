@@ -32,14 +32,18 @@ func Authenticate(username string, password string) *Session {
 		&packets.BanchoFriendList{},
 		sess.ToUserPresence(),
 		sess.ToHandleUserUpdate(),
-		&packets.BanchoChannelJoinSuccess{"#osu"},
-		&packets.BanchoChannelJoinSuccess{"#announce"},
-		&packets.BanchoChannelAvailable{"#osu", "osu", 1},
-		&packets.BanchoChannelAvailable{"#announce", "announce", 1},
-		&packets.BanchoChannelListingComplete{},
 	)
 
+	sess.SubscribeChannel("#osu")
+	sess.SubscribeChannel("#announce")
+
 	go sess.SendUsers()
+
+	ch := GetChannels()
+	for _, c := range ch {
+		sess.Send(c.ToChannelAvailable())
+	}
+	sess.Send(&packets.BanchoChannelListingComplete{})
 
 	return sess
 }
