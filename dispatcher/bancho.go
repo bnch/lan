@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"bufio"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -37,10 +38,7 @@ func (s Server) bancho(w http.ResponseWriter, r *http.Request) {
 		p, _ := br.ReadString('\n')
 		sess = handler.Authenticate(strings.TrimSpace(u), strings.TrimSpace(p))
 	} else {
-		sess = handler.Sessions.GetByToken(tok)
-		if sess == nil {
-			sess = handler.LogoutTokenNotFound()
-		}
+		sess = s.banchoHandle(r)
 	}
 
 	if tok == "" {
@@ -64,10 +62,28 @@ Looper:
 	if err != nil {
 		fmt.Println(err)
 	}
-	dumper.Dump(os.Stdout, encoded)
 	w.Write(encoded)
 
 	os.Stdout.WriteString("=> request done in " + time.Now().Sub(begin).String() + "\n")
+}
+
+func (s Server) banchoHandle(r *http.Request) *handler.Session {
+	sess := handler.Sessions.GetByToken(r.Header.Get("osu-token"))
+	if sess == nil {
+		return handler.LogoutTokenNotFound()
+	}
+	d, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Printf("Error reading post body: %v\n", err)
+		return handler.LogoutTokenNotFound()
+	}
+	pks, err := packets.Depacketify(d)
+	if err != nil {
+		fmt.Printf("Error depacketifying: %v\n", err)
+		return handler.LogoutTokenNotFound()
+	}
+	sess.Handle(pks)
+	return sess
 }
 
 var dumper = banchoreader.New()

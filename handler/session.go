@@ -3,15 +3,25 @@ package handler
 import (
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/bnch/lan/packets"
 )
 
 const packetChanBufSize = 500
 
+// Sessions is a slice containing all the sessions of the online users.
+var Sessions = new(SessionCollection)
+
+// streams are SessionCollections in which an user can subscribe to receive all
+// packets being sent there.
+var streams = make(map[string]*SessionCollection)
+var streamsMutex sync.RWMutex
+
 // AdminPassword is md5 hash of the password.
 var AdminPassword string
 
+// current userid. will start at 50
 var userID int32 = 49
 
 // Session is an user's session on Bancho.
@@ -23,6 +33,8 @@ type Session struct {
 	Packets  chan packets.Packet
 	disposed bool
 	Mutex    sync.RWMutex
+	LastSeen time.Time
+	State    packets.OsuSendUserState
 	streams  []string
 }
 
@@ -321,12 +333,22 @@ func (s *SessionCollection) Len() int {
 	return len(s.s)
 }
 
-// Sessions is a slice containing all the sessions of the online users.
-var Sessions = new(SessionCollection)
+// disposer automatically disposes sessions older than 120 seconds.
+func disposer() {
+	for {
+		time.Sleep(time.Second * 10)
+		cp := Sessions.Copy()
+		for _, c := range cp {
+			c.Mutex.RLock()
+			since := time.Since(c.LastSeen)
+			c.Mutex.RUnlock()
+			if since > time.Second*120 {
+				c.Dispose()
+			}
+		}
+	}
+}
 
-// streams are SessionCollections in which an user can subscribe to receive all
-// packets being sent there.
-var streams = make(map[string]*SessionCollection)
-
-// streamsMutex is the mutex for streams.
-var streamsMutex sync.RWMutex
+func init() {
+	go disposer()
+}

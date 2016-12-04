@@ -40,10 +40,15 @@ func (s *Session) ToUserPresence() *packets.BanchoUserPresence {
 // ToHandleUserUpdate converts a session to a packets.BanchoHandleUserUpdate
 func (s *Session) ToHandleUserUpdate() *packets.BanchoHandleUserUpdate {
 	return &packets.BanchoHandleUserUpdate{
-		ID:          s.UserID,
-		Action:      packets.StatusIdle,
-		RankedScore: 0,
-		TotalScore:  0,
-		Rank:        s.UserID,
+		ID:              s.UserID,
+		Action:          s.State.Action,
+		ActionText:      s.State.Text,
+		ActionMapMD5:    s.State.MapMD5,
+		ActionMods:      s.State.Mods,
+		ActionGameMode:  s.State.GameMode,
+		ActionBeatmapID: s.State.BeatmapID,
+		RankedScore:     0,
+		TotalScore:      0,
+		Rank:            s.UserID,
 	}
 }

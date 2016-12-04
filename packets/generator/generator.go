@@ -298,6 +298,7 @@ package packets
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	
 	"github.com/bnch/lan/osubinary"
@@ -353,7 +354,9 @@ func Depacketify(b []byte) ([]Packet, error) {
 		if err != nil {
 			return nil, err
 		}
-		packets = append(packets, packet)
+		if packet != nil {	
+			packets = append(packets, packet)
+		}
 	}
 }
 
@@ -362,7 +365,8 @@ func depacketify(id uint16, packet []byte) (Packet, error) {
 	switch id {
 %s
 	default:
-		return nil, errors.New("invalid packet ID")
+		fmt.Printf("Asked to depacketify an unknown packet: %%d\n", int(id))
+		return nil, nil // errors.New("invalid packet ID (" + strconv.Itoa(int(id)) + ")")
 	}
 	err := p.Depacketify(packet)
 	return p, err

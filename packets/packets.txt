@@ -1,7 +1,27 @@
+ID: 0, Name: OsuSendUserState
+OsuSendUserState informs bancho about what's the user currently doing (playing,
+listening, multiplaying what beatmap with what mods on what mode)
+
+- Action uint8, afk, modding, playing, osudirect...
+- Text string
+- MapMD5 string
+- Mods int32
+- GameMode uint8
+- BeatmapID uint32
+-------------------------------------------------------------------------------
 ID: 2, Name: OsuExit
 OsuExit is sent by the osu! client whenever the client closes
 
 - Reason int32, 0 if closing, 1 if updating
+-------------------------------------------------------------------------------
+ID: 3, Name: OsuRequestStatusUpdate
+OsuRequestStatusUpdate is a request to update the status of the current user. If
+it changed, then it is also a request to distribute it to all those who need it
+(spectators)
+-------------------------------------------------------------------------------
+ID: 4, Name: OsuPong
+OsuPong is received from the client to notify it's still alive (sent when
+there would otherwise be nothing in the POST body)
 -------------------------------------------------------------------------------
 ID: 5, Name: BanchoLoginReply
 BanchoLoginReply is a packet containing either an user ID or an authentication
@@ -92,6 +112,11 @@ BanchoUserPresence tells the client basic information about a certain user.
 - Latitude float32
 - Rank int32
 -------------------------------------------------------------------------------
+ID: 85, Name: OsuUserStatsRequest
+OsuUserStatsRequest is a request to have a BanchoHandleUserUpdate of some users.
+
+- IDs []int32
+-------------------------------------------------------------------------------
 ID: 89, Name: BanchoChannelListingComplete
 BanchoChannelListingComplete says the channel listing has been completed.
 -------------------------------------------------------------------------------
@@ -116,6 +141,12 @@ comes online.
 ID: 96, Name: BanchoUserPresenceBundle
 BanchoUserPresenceBundle is used to initially broadcast to an user the users
 currently online on the server.
+
+- IDs []int32
+-------------------------------------------------------------------------------
+ID: 97, Name: OsuUserPresenceRequest
+OsuUserPresenceRequest is a request to have a BanchoUserPresence of some
+users.
 
 - IDs []int32
 -------------------------------------------------------------------------------

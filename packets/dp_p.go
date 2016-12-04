@@ -5,6 +5,7 @@ package packets
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	
 	"github.com/bnch/lan/osubinary"
@@ -31,7 +32,10 @@ func packetify(w *osubinary.OsuWriteChain, p Packetifier) error {
 	}
 	var id uint16
 	switch p.(type) {
+	case *OsuSendUserState: id = 0
 	case *OsuExit: id = 2
+	case *OsuRequestStatusUpdate: id = 3
+	case *OsuPong: id = 4
 	case *BanchoLoginReply: id = 5
 	case *BanchoHandleUserUpdate: id = 11
 	case *BanchoAnnounce: id = 24
@@ -44,11 +48,13 @@ func packetify(w *osubinary.OsuWriteChain, p Packetifier) error {
 	case *BanchoFriendList: id = 72
 	case *BanchoProtocolVersion: id = 75
 	case *BanchoUserPresence: id = 83
+	case *OsuUserStatsRequest: id = 85
 	case *BanchoChannelListingComplete: id = 89
 	case *BanchoBanInfo: id = 92
 	case *BanchoUserSilenced: id = 94
 	case *BanchoUserPresenceSingle: id = 95
 	case *BanchoUserPresenceBundle: id = 96
+	case *OsuUserPresenceRequest: id = 97
 
 	default:
 		return errors.New("invalid packet")
@@ -78,14 +84,19 @@ func Depacketify(b []byte) ([]Packet, error) {
 		if err != nil {
 			return nil, err
 		}
-		packets = append(packets, packet)
+		if packet != nil {	
+			packets = append(packets, packet)
+		}
 	}
 }
 
 func depacketify(id uint16, packet []byte) (Packet, error) {
 	var p Packet
 	switch id {
+	case 0: p = &OsuSendUserState{}
 	case 2: p = &OsuExit{}
+	case 3: p = &OsuRequestStatusUpdate{}
+	case 4: p = &OsuPong{}
 	case 5: p = &BanchoLoginReply{}
 	case 11: p = &BanchoHandleUserUpdate{}
 	case 24: p = &BanchoAnnounce{}
@@ -98,14 +109,17 @@ func depacketify(id uint16, packet []byte) (Packet, error) {
 	case 72: p = &BanchoFriendList{}
 	case 75: p = &BanchoProtocolVersion{}
 	case 83: p = &BanchoUserPresence{}
+	case 85: p = &OsuUserStatsRequest{}
 	case 89: p = &BanchoChannelListingComplete{}
 	case 92: p = &BanchoBanInfo{}
 	case 94: p = &BanchoUserSilenced{}
 	case 95: p = &BanchoUserPresenceSingle{}
 	case 96: p = &BanchoUserPresenceBundle{}
+	case 97: p = &OsuUserPresenceRequest{}
 
 	default:
-		return nil, errors.New("invalid packet ID")
+		fmt.Printf("Asked to depacketify an unknown packet: %d\n", int(id))
+		return nil, nil // errors.New("invalid packet ID (" + strconv.Itoa(int(id)) + ")")
 	}
 	err := p.Depacketify(packet)
 	return p, err
