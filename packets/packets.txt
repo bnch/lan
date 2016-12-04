@@ -21,8 +21,8 @@ need.
 - ActionGameMode uint8
 - ActionBeatmapID uint32
 - RankedScore uint64
-- Accuracy float64, 0.1337 = 13.37%
-- Playcount int32
+- Accuracy float32, 0.1337 = 13.37%
+- Playcount uint32
 - TotalScore uint64
 - Rank int32
 - PP uint16

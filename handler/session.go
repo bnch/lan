@@ -193,5 +193,13 @@ func (s *SessionCollection) Delete(token string) {
 	}
 }
 
+// Send sends packets to all members of the SessionCollection
+func (s *SessionCollection) Send(ps ...packets.Packet) {
+	c := s.Copy()
+	for _, e := range c {
+		e.Send(ps...)
+	}
+}
+
 // Sessions is a slice containing all the sessions of the online users.
 var Sessions = new(SessionCollection)

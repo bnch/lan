@@ -18,8 +18,8 @@ type BanchoHandleUserUpdate struct {
 	ActionGameMode uint8
 	ActionBeatmapID uint32
 	RankedScore uint64
-	Accuracy float64
-	Playcount int32
+	Accuracy float32
+	Playcount uint32
 	TotalScore uint64
 	Rank int32
 	PP uint16
@@ -38,8 +38,8 @@ func (p BanchoHandleUserUpdate) Packetify() ([]byte, error) {
 	w.Uint8(p.ActionGameMode)
 	w.Uint32(p.ActionBeatmapID)
 	w.Uint64(p.RankedScore)
-	w.Float64(p.Accuracy)
-	w.Int32(p.Playcount)
+	w.Float32(p.Accuracy)
+	w.Uint32(p.Playcount)
 	w.Uint64(p.TotalScore)
 	w.Int32(p.Rank)
 	w.Uint16(p.PP)
@@ -64,8 +64,8 @@ func (p *BanchoHandleUserUpdate) Depacketify(b []byte) error {
 	p.ActionGameMode = r.Uint8()
 	p.ActionBeatmapID = r.Uint32()
 	p.RankedScore = r.Uint64()
-	p.Accuracy = r.Float64()
-	p.Playcount = r.Int32()
+	p.Accuracy = r.Float32()
+	p.Playcount = r.Uint32()
 	p.TotalScore = r.Uint64()
 	p.Rank = r.Int32()
 	p.PP = r.Uint16()
