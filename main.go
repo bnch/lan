@@ -7,6 +7,8 @@ import (
 
 	"github.com/bnch/lan/dispatcher"
 	"github.com/bnch/lan/handler"
+	// banchobot does its own initialisation
+	_ "github.com/bnch/lan/handler/banchobot"
 	"github.com/fatih/color"
 	"github.com/thehowl/conf"
 )

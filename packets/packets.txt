@@ -69,6 +69,13 @@ BanchoAnnounce is sent by bancho to notify the osu! clients of something.
 
 - Message string
 -------------------------------------------------------------------------------
+ID: 25, Name: OsuSendPrivateMessage
+
+- SenderName string, Sender's username
+- Content string
+- Channel string
+- SenderID int32, Sender's ID
+-------------------------------------------------------------------------------
 ID: 63, Name: OsuChannelJoin
 OsuChannelJoin is sent by the osu! client whenever it wishes to join a channel.
 

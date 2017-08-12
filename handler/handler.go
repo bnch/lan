@@ -37,7 +37,12 @@ func (s *Session) handle(p packets.Packet) {
 		s.State = *p
 	case *packets.OsuSendMessage:
 		if !s.In("chan/" + p.Channel) {
-			// TODO: send message you are not in that channel!
+			s.Send(&packets.BanchoSendMessage{
+				SenderName: "BanchoBot",
+				SenderID:   1,
+				Content:    "You haven't joined that channel yet!",
+				Channel:    "BanchoBot",
+			})
 			return
 		}
 		p.SenderName = s.Username
@@ -73,6 +78,17 @@ func (s *Session) handle(p packets.Packet) {
 	case *packets.OsuRequestStatusUpdate:
 		s.Send(s.ToHandleUserUpdate())
 		// Should also be sent to spectators if any
+	case *packets.OsuSendPrivateMessage:
+		u := Sessions.GetByUsername(p.Channel)
+		if u == nil {
+			return
+		}
+		u.Send(&packets.BanchoSendMessage{
+			SenderID:   s.UserID,
+			SenderName: s.Username,
+			Content:    p.Content,
+			Channel:    s.Username,
+		})
 	default:
 		fmt.Printf("> got %T\n", p)
 	}
