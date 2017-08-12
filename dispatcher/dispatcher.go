@@ -44,6 +44,7 @@ func (s Server) switcher(w http.ResponseWriter, r *http.Request) {
 	case "osu.ppy.sh":
 		scoreServer.ServeHTTP(w, r)
 	default:
+		w.Header().Set("Content-Type", "text/plain")
 		w.Write([]byte("lan"))
 	}
 }

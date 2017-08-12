@@ -24,10 +24,26 @@ func (s *Session) handle(p packets.Packet) {
 			fmt.Printf("Error while handling a %T: %v\n%#v\n", p, err, p)
 		}
 	}()
+	fmt.Printf("< %#v\n", p)
+
+	// Update last seen
+	s.Mutex.Lock()
+	s.LastSeen = time.Now()
+	s.Mutex.Unlock()
+
 	switch p := p.(type) {
 	case *packets.OsuSendUserState:
 		// Set the user's state to that requested to have.
 		s.State = *p
+	case *packets.OsuSendMessage:
+		if !s.In("chan/" + p.Channel) {
+			// TODO: send message you are not in that channel!
+			return
+		}
+		p.SenderName = s.Username
+		p.SenderID = s.UserID
+		converted := packets.BanchoSendMessage(*p)
+		SendMessageToChannel(&converted)
 	case *packets.OsuExit:
 		// Log out the user
 		s.Mutex.RLock()
@@ -41,13 +57,22 @@ func (s *Session) handle(p packets.Packet) {
 			if u == nil {
 				continue
 			}
+			s.Send(u.ToHandleUserUpdate())
+		}
+	case *packets.OsuUserPresenceRequest:
+		// Send to osu! information about the users it requests.
+		for _, i := range p.IDs {
+			u := Sessions.GetByID(i)
+			if u == nil {
+				continue
+			}
 			s.Send(u.ToUserPresence())
 		}
 	case *packets.OsuPong:
-		// Update the Last Seen. That's it.
-		s.Mutex.Lock()
-		defer s.Mutex.Unlock()
-		s.LastSeen = time.Now()
+		// Do nothing
+	case *packets.OsuRequestStatusUpdate:
+		s.Send(s.ToHandleUserUpdate())
+		// Should also be sent to spectators if any
 	default:
 		fmt.Printf("> got %T\n", p)
 	}

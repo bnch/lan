@@ -152,6 +152,7 @@ func NewSession(username string, passMD5 string) (s *Session) {
 	Sessions.Lock()
 	for _, el := range Sessions.s {
 		if el.Username == username {
+			Sessions.Unlock()
 			return &Session{
 				UserID:  authFailed,
 				Token:   GenerateGUID(),

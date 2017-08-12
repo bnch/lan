@@ -71,6 +71,16 @@ func (s *Session) UnsubscribeChannel(ch string) {
 	s.Unsubscribe("chan/" + ch)
 }
 
+// SendMessageToChannel broadcasts a BanchoSendMessage to all the members of a
+// channel.
+func SendMessageToChannel(m *packets.BanchoSendMessage) {
+	s, ok := streams["chan/"+m.Channel]
+	if !ok {
+		return
+	}
+	s.SendExcept([]int32{m.SenderID}, m)
+}
+
 func init() {
 	AddChannel(Channel{
 		"#osu",

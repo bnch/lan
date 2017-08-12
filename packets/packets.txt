@@ -9,6 +9,14 @@ listening, multiplaying what beatmap with what mods on what mode)
 - GameMode uint8
 - BeatmapID uint32
 -------------------------------------------------------------------------------
+ID: 1, Name: OsuSendMessage
+OsuSendMessage sends a message through the osu! chat.
+
+- SenderName string, Sender's username, must be replaced server-side
+- Content string
+- Channel string
+- SenderID int32, Sender's ID, should be replaced server-side by actual user ID
+-------------------------------------------------------------------------------
 ID: 2, Name: OsuExit
 OsuExit is sent by the osu! client whenever the client closes
 
@@ -28,6 +36,15 @@ BanchoLoginReply is a packet containing either an user ID or an authentication
 error (see handler/authenticate.go).
 
 - UserID int32, may have negative values
+-------------------------------------------------------------------------------
+ID: 7, Name: BanchoSendMessage
+BanchoSendMessage is the serverside counterpart of OsuSendMessage. It simply
+sends a message to a channel on osu!.
+
+- SenderName string, Sender's username
+- Content string
+- Channel string
+- SenderID int32, Sender's ID
 -------------------------------------------------------------------------------
 ID: 11, Name: BanchoHandleUserUpdate
 BanchoHandleUserUpdate contains all the information about an user you will ever

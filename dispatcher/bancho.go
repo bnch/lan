@@ -4,10 +4,8 @@ import (
 	"bufio"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"fmt"
 
@@ -17,13 +15,13 @@ import (
 )
 
 func (s Server) bancho(w http.ResponseWriter, r *http.Request) {
-	begin := time.Now()
+	//begin := time.Now()
 
 	defer panicRecover()
 
 	if r.Method != "POST" || r.UserAgent() != "osu!" {
 		w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-		w.Write([]byte("lan - a private bancho server designed for playing in the local network\n"))
+		w.Write([]byte("lan\ngithub.com/bnch/lan\n"))
 		return
 	}
 
@@ -52,6 +50,7 @@ Looper:
 	for {
 		select {
 		case x := <-sess.Packets:
+			fmt.Printf("> %#v\n", x)
 			pks = append(pks, packets.Packetifier(x))
 		default:
 			break Looper
@@ -64,7 +63,7 @@ Looper:
 	}
 	w.Write(encoded)
 
-	os.Stdout.WriteString("=> request done in " + time.Now().Sub(begin).String() + "\n")
+	//os.Stdout.WriteString("=> request done in " + time.Now().Sub(begin).String() + "\n")
 }
 
 func (s Server) banchoHandle(r *http.Request) *handler.Session {
