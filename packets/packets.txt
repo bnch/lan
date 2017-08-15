@@ -64,6 +64,12 @@ need.
 - Rank int32
 - PP uint16
 -------------------------------------------------------------------------------
+ID: 12, Name: BanchoUserQuit
+BanchoUserQuit tells clients that an user has exited the game.
+
+- ID int32
+- State byte, Gone = 0, OsuRemaining = 1, IRCRemaining = 2
+-------------------------------------------------------------------------------
 ID: 24, Name: BanchoAnnounce
 BanchoAnnounce is sent by bancho to notify the osu! clients of something.
 

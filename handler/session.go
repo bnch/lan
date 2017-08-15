@@ -86,9 +86,10 @@ func (s Session) Dispose() {
 	Redis.Del("lan/queues/" + s.Token)
 	Redis.Del("lan/sessions/" + s.Token)
 	Sessions.Delete(s)
-	for _, x := range Redis.SMembers("lan/my_collections").Val() {
+	for _, x := range Redis.SMembers("lan/my_collections/" + s.Token).Val() {
 		SessionCollection(x).Delete(s)
 	}
+	Redis.Del("lan/my_collections/" + s.Token)
 }
 
 // NewSession creates a new session.
@@ -246,6 +247,7 @@ func disposer() {
 			}
 			if time.Now().Sub(sess.LastSeen) > time.Second*120 {
 				sess.Dispose()
+				Sessions.Send(&packets.BanchoUserQuit{ID: sess.UserID, State: 0})
 			}
 		}
 	}

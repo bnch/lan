@@ -40,6 +40,7 @@ func packetify(w *osubinary.OsuWriteChain, p Packetifier) error {
 	case *BanchoLoginReply: id = 5
 	case *BanchoSendMessage: id = 7
 	case *BanchoHandleUserUpdate: id = 11
+	case *BanchoUserQuit: id = 12
 	case *BanchoAnnounce: id = 24
 	case *OsuSendPrivateMessage: id = 25
 	case *OsuChannelJoin: id = 63
@@ -105,6 +106,7 @@ func depacketify(id uint16, packet []byte) (Packet, error) {
 	case 5: p = &BanchoLoginReply{}
 	case 7: p = &BanchoSendMessage{}
 	case 11: p = &BanchoHandleUserUpdate{}
+	case 12: p = &BanchoUserQuit{}
 	case 24: p = &BanchoAnnounce{}
 	case 25: p = &OsuSendPrivateMessage{}
 	case 63: p = &OsuChannelJoin{}

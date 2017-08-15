@@ -48,6 +48,8 @@ func Authenticate(username string, password string) Session {
 	}
 	sess.Send(&packets.BanchoChannelListingComplete{})
 
+	Sessions.Send(&packets.BanchoUserPresenceSingle{ID: sess.UserID})
+
 	return sess
 }
 

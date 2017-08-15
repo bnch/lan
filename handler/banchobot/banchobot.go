@@ -28,7 +28,7 @@ func Start() {
 			Action: 0,
 		},
 	}
-	if prevSession != nil {
+	if prevSession == nil {
 		handler.Sessions.Add(self)
 	}
 	handler.SaveSession(self)

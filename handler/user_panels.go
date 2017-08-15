@@ -19,6 +19,7 @@ func sendUserState(p *packets.OsuSendUserState, s Session) {
 func osuExit(p *packets.OsuExit, s Session) {
 	fmt.Printf("> %s has logged out\n", s.Username)
 	s.Dispose()
+	Sessions.Send(&packets.BanchoUserQuit{ID: s.UserID, State: 0})
 }
 
 func userStatsRequest(p *packets.OsuUserStatsRequest, s Session) {
