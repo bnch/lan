@@ -65,19 +65,19 @@ func (s Session) Subscribe(stream string) bool {
 		return false
 	}
 	SessionCollection(stream).Add(s)
-	Redis.SAdd("lan/my_collections", stream)
+	Redis.SAdd("lan/my_collections/"+s.Token, stream)
 	return true
 }
 
 // Unsubscribe removes the user from a stream.
 func (s Session) Unsubscribe(stream string) {
 	SessionCollection(stream).Delete(s)
-	Redis.SRem("lan/my_collections", stream)
+	Redis.SRem("lan/my_collections/"+s.Token, stream)
 }
 
 // In checks whether a Session is in a stream.
-func (s *Session) In(stream string) bool {
-	return Redis.SIsMember("lan/my_collections", stream).Val()
+func (s Session) In(stream string) bool {
+	return Redis.SIsMember("lan/my_collections/"+s.Token, stream).Val()
 }
 
 // Dispose finalizes the session removing all references to it

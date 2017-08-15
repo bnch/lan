@@ -1,15 +1,14 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/bnch/lan/packets"
 	"gopkg.in/redis.v5"
 )
-
-// ProtocolVersion is the version of the Bancho protocol.
-const ProtocolVersion = 19
 
 // Redis client that will be used to fetch and retrieve information
 var Redis *redis.Client
@@ -33,64 +32,62 @@ func (s Session) handle(p packets.Packet) {
 	}()
 	fmt.Printf("< %#v\n", p)
 
-	switch p := p.(type) {
-	case *packets.OsuSendUserState:
-		// Set the user's state to that requested to have.
-		s.State = *p
-		SaveSession(s)
-	case *packets.OsuSendMessage:
-		if !s.In("chan/" + p.Channel) {
-			s.Send(&packets.BanchoSendMessage{
-				SenderName: "BanchoBot",
-				SenderID:   1,
-				Content:    "You haven't joined that channel yet!",
-				Channel:    "BanchoBot",
-			})
-			return
-		}
-		p.SenderName = s.Username
-		p.SenderID = s.UserID
-		converted := packets.BanchoSendMessage(*p)
-		SendMessageToChannel(&converted)
-	case *packets.OsuExit:
-		// Log out the user
-		fmt.Printf("> %s has logged out\n", s.Username)
-		s.Dispose()
-	case *packets.OsuUserStatsRequest:
-		// Send to osu! information about the users it requests.
-		for _, i := range p.IDs {
-			u := GetSession(Sessions.TokenFromID(i))
-			if u == nil {
-				continue
-			}
-			s.Send(u.ToHandleUserUpdate())
-		}
-	case *packets.OsuUserPresenceRequest:
-		// Send to osu! information about the users it requests.
-		for _, i := range p.IDs {
-			u := GetSession(Sessions.TokenFromID(i))
-			if u == nil {
-				continue
-			}
-			s.Send(u.ToUserPresence())
-		}
-	case *packets.OsuPong:
-		// Do nothing
-	case *packets.OsuRequestStatusUpdate:
-		s.Send(s.ToHandleUserUpdate())
-		// Should also be sent to spectators if any
-	case *packets.OsuSendPrivateMessage:
-		u := GetSession(Sessions.TokenFromUsername(p.Channel))
-		if u == nil {
-			return
-		}
-		u.Send(&packets.BanchoSendMessage{
-			SenderID:   s.UserID,
-			SenderName: s.Username,
-			Content:    p.Content,
-			Channel:    s.Username,
-		})
-	default:
-		fmt.Printf("> got %T\n", p)
+	f := handlers[reflect.TypeOf(p).Elem().Name()]
+
+	// function not found
+	if !f.IsValid() {
+		fmt.Printf("> couldn't handle packet of type %T\n", p)
+		return
 	}
+
+	f.Call([]reflect.Value{
+		reflect.ValueOf(p),
+		reflect.ValueOf(s),
+	})
+}
+
+// At the time of writing this, there are 109 known osu! packets.
+var handlers = make(map[string]reflect.Value, 109)
+
+// apparently, this is the way you do it. Don't ask me why.
+// https://golang.org/pkg/reflect/#TypeOf
+var packetType = reflect.TypeOf((*packets.Packet)(nil)).Elem()
+var sessionType = reflect.TypeOf(Session{})
+
+// RegisterHandler registers a handler function.
+//
+// Handler functions are simply in the signature func (p *packets.<something>).
+func RegisterHandler(f interface{}) {
+	val := reflect.ValueOf(f)
+	t := val.Type()
+
+	// if the function doesn't have exactly two input parameter, then we can't
+	// register it.
+	if t.NumIn() != 2 {
+		panic(errors.New("handler.RegisterHandler: function doesn't have exactly 1 input argument"))
+	}
+
+	// make sure the packet argument is a valid Packet
+	argPacket := t.In(0)
+	if !argPacket.Implements(packetType) {
+		panic(errors.New("handler.RegisterHandler: function argument is not a packets.Packet"))
+	}
+
+	if !t.In(1).AssignableTo(sessionType) {
+		panic(errors.New("handler.RegisterHandler: second argument is not a Session"))
+	}
+
+	// register the function in the handlers
+	handlers[argPacket.Elem().Name()] = val
+}
+
+// RegisterHandlers simply executes RegisterHandler for many handlers.
+func RegisterHandlers(handlers ...interface{}) {
+	for _, h := range handlers {
+		RegisterHandler(h)
+	}
+}
+
+func init() {
+	RegisterHandler(func(*packets.OsuPong, Session) {})
 }

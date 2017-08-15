@@ -124,6 +124,11 @@ the client at login.
 
 - Version int32
 -------------------------------------------------------------------------------
+ID: 78, Name: OsuChannelLeave
+OsuChannelLeave requests to part a channel.
+
+- Channel string
+-------------------------------------------------------------------------------
 ID: 83, Name: BanchoUserPresence
 BanchoUserPresence tells the client basic information about a certain user.
 

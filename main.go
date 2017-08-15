@@ -20,7 +20,8 @@ var c = struct {
 	AdminPassword string `description:"The plaintext password of the admin user. Make this very long! If empty, it will be automatically generated."`
 	RedisAddr     string
 }{
-	Port: ":80",
+	Port:      ":80",
+	RedisAddr: "localhost:6379",
 }
 
 func main() {

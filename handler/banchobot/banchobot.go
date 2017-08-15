@@ -2,6 +2,7 @@ package banchobot
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bnch/lan/handler"
@@ -65,8 +66,33 @@ func handleMessage(user *handler.Session, msg string) {
 		SenderID:   self.UserID,
 		Channel:    user.Username,
 	}
-	if msg == "!ping" {
-		newMsg.Content = "Pong, motherfucker."
+	parts := strings.Split(msg, " ")
+	switch parts[0] {
+	case "ping":
+		newMsg.Content = "What? You're sending me a ping and you are " +
+			"expecting me to respond?!? You're so-- wait, I guess this kind " +
+			"of counts as a response. Oh well."
+	case "admin":
+		if user.Admin {
+			newMsg.Content = "yes"
+		} else {
+			newMsg.Content = "no"
+		}
+	case "create_channel":
+		if len(parts) < 2 || !user.Admin {
+			return
+		}
+		handler.AddChannel(handler.Channel{
+			Name:        parts[1],
+			Description: strings.Join(parts[2:], " "),
+		})
+		newMsg.Content = parts[1] + " created!"
+	case "remove_channel":
+		if len(parts) != 2 || !user.Admin {
+			return
+		}
+		handler.RemoveChannel(parts[1])
+		newMsg.Content = "channel deleted!"
 	}
 	if newMsg.Content != "" {
 		user.Send(newMsg)

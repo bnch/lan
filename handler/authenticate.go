@@ -14,6 +14,9 @@ const (
 	authRequireVerification
 )
 
+// ProtocolVersion is the version of the Bancho protocol.
+const ProtocolVersion = 19
+
 // Authenticate logs in into lan.
 func Authenticate(username string, password string) Session {
 	sess := NewSession(username, password)
