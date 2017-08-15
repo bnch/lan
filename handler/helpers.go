@@ -13,16 +13,23 @@ func (s *Session) SendUsers() {
 			fmt.Println("critical:", err)
 		}
 	}()
-	c := Sessions.Copy()
-	chunk := make([]int32, 0, 512)
-	for _, e := range c {
-		chunk = append(chunk, e.UserID)
-		if len(chunk) == 512 {
-			s.Send(&packets.BanchoUserPresenceBundle{chunk})
-			chunk = make([]int32, 0, 512)
+
+	// Simpler demonstration: https://play.golang.org/p/QKp3emL58a
+
+	const chunkSize = 512
+
+	c := Sessions.AllUserIDs()
+	for i := 0; i < (len(c)/chunkSize + 1); i++ {
+		start := chunkSize * i
+		end := start + chunkSize
+		if end > len(c) {
+			end = len(c)
+		}
+
+		if len(c[start:end]) > 0 {
+			s.Send(&packets.BanchoUserPresenceBundle{IDs: c[start:end]})
 		}
 	}
-	s.Send(&packets.BanchoUserPresenceBundle{chunk})
 }
 
 // ToUserPresence converts a session to a packets.BanchoUserPresence
@@ -51,4 +58,16 @@ func (s *Session) ToHandleUserUpdate() *packets.BanchoHandleUserUpdate {
 		TotalScore:      0,
 		Rank:            s.UserID,
 	}
+}
+
+// Start runs all initialisations required for this package.
+func Start() {
+	AddChannel(Channel{
+		"#osu",
+		"General discussion about everything",
+	})
+	AddChannel(Channel{
+		"#announce",
+		"Probably not so important announcements.",
+	})
 }

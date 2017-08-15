@@ -8,16 +8,21 @@ import (
 	"github.com/bnch/lan/packets"
 )
 
-var self *handler.Session
+var self handler.Session
 
-func init() {
-	self = &handler.Session{
+// Start initialises banchobot.
+func Start() {
+	prevSession := handler.GetSession(handler.Sessions.TokenFromUsername("BanchoBot"))
+	if prevSession != nil {
+		self = *prevSession
+		go packetHandler()
+		return
+	}
+	self = handler.Session{
 		Username: "BanchoBot",
 		UserID:   1,
 		Token:    handler.GenerateGUID(),
 		Admin:    true,
-		// packets should be handled rather quickly, so we need a small buffer
-		Packets:  make(chan packets.Packet, 50),
 		LastSeen: time.Now().Add(time.Hour * 24 * 365 * 10),
 		State: packets.OsuSendUserState{
 			Action: 2,
@@ -25,17 +30,31 @@ func init() {
 		},
 	}
 	handler.Sessions.Add(self)
+	handler.SaveSession(self)
 	go packetHandler()
 }
 
 func packetHandler() {
-	for packet := range self.Packets {
-		switch p := packet.(type) {
-		case *packets.BanchoSendMessage:
-			// message received
-			fmt.Printf("B!%s: %s\n", p.SenderName, p.Content)
-			sess := handler.Sessions.GetByID(p.SenderID)
-			handleMessage(sess, p.Content)
+	for {
+		msg := handler.Redis.BLPop(time.Second*20, "lan/queues/"+self.Token).Val()
+		if len(msg) < 2 {
+			continue
+		}
+
+		pks, err := packets.Depacketify([]byte(msg[1]))
+		if err != nil {
+			fmt.Println("banchobot error", err)
+			continue
+		}
+
+		for _, p := range pks {
+			switch p := p.(type) {
+			case *packets.BanchoSendMessage:
+				// message received
+				fmt.Printf("B!%s: %s\n", p.SenderName, p.Content)
+				token := handler.Sessions.TokenFromID(p.SenderID)
+				handleMessage(handler.GetSession(token), p.Content)
+			}
 		}
 	}
 }

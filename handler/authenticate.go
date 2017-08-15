@@ -15,20 +15,20 @@ const (
 )
 
 // Authenticate logs in into lan.
-func Authenticate(username string, password string) *Session {
+func Authenticate(username string, password string) Session {
 	sess := NewSession(username, password)
 
 	// if userid is negative, it's one of the special user IDs
 	if sess.UserID < 0 {
-		sess.Send(&packets.BanchoLoginReply{sess.UserID})
+		sess.Send(&packets.BanchoLoginReply{UserID: sess.UserID})
 		return sess
 	}
 
 	sess.Send(
-		&packets.BanchoBanInfo{0},
-		&packets.BanchoLoginReply{sess.UserID},
-		&packets.BanchoProtocolVersion{ProtocolVersion},
-		&packets.BanchoLoginPermissions{sess.Permissions()},
+		&packets.BanchoBanInfo{Seconds: 0},
+		&packets.BanchoLoginReply{UserID: sess.UserID},
+		&packets.BanchoProtocolVersion{Version: ProtocolVersion},
+		&packets.BanchoLoginPermissions{Permissions: sess.Permissions()},
 		&packets.BanchoFriendList{},
 		sess.ToUserPresence(),
 		sess.ToHandleUserUpdate(),
@@ -50,12 +50,11 @@ func Authenticate(username string, password string) *Session {
 
 // LogoutTokenNotFound returns a Session for attempts to connect when there's
 // no such user stored with such token.
-func LogoutTokenNotFound() *Session {
-	sess := &Session{
-		Token:   GenerateGUID(),
-		Packets: make(chan packets.Packet, 5),
+func LogoutTokenNotFound() Session {
+	sess := Session{
+		Token: GenerateGUID(),
 	}
-	sess.Send(&packets.BanchoLoginReply{authFailedRetryLater})
-	sess.Send(&packets.BanchoAnnounce{"Sorry, but we had an issue logging you in. Trying again..."})
+	sess.Send(&packets.BanchoLoginReply{UserID: authFailedRetryLater})
+	sess.Send(&packets.BanchoAnnounce{Message: "Sorry, but we had an issue logging you in. Trying again..."})
 	return sess
 }

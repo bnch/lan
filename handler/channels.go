@@ -12,9 +12,7 @@ type Channel struct {
 
 // Users gets the number of users in a channel.
 func (c Channel) Users() uint16 {
-	streamsMutex.RLock()
-	defer streamsMutex.RUnlock()
-	return uint16(streams["chan/"+c.Name].Len())
+	return uint16(Redis.SCard("lan/session_list/chan/" + c.Name).Val())
 }
 
 // ToChannelAvailable converts a Channel to a BanchoChannelAvailable
@@ -26,44 +24,33 @@ func (c Channel) ToChannelAvailable() *packets.BanchoChannelAvailable {
 	}
 }
 
-// It's not thread-safe, but it's only meant to be used rarely when it comes to
-// writing it so fuck it.
-var channels []Channel
-
-// AddChannel initialises a channel, creating the stream for it and adding it to
-// the channels slice.
+// AddChannel initialises a channel, creating it on redis.
 func AddChannel(c Channel) {
-	streamsMutex.Lock()
-	defer streamsMutex.Unlock()
-	streams["chan/"+c.Name] = new(SessionCollection)
-	channels = append(channels, c)
+	Redis.HSet("lan/channels", c.Name, c.Description)
 }
 
 // GetChannels makes a copy of channels.
 func GetChannels() []Channel {
-	ch := make([]Channel, len(channels))
-	copy(ch, channels)
-	return ch
+	chMap := Redis.HGetAll("lan/channels").Val()
+
+	chans := make([]Channel, len(chMap))
+	i := 0
+	for k, v := range chMap {
+		chans[i] = Channel{Name: k, Description: v}
+	}
+
+	return chans
 }
 
 // RemoveChannel removes a channel.
 func RemoveChannel(name string) {
-	for i, x := range channels {
-		if x.Name == name {
-			channels[i] = channels[len(channels)-1]
-			channels = channels[:len(channels)-1]
-			streamsMutex.Lock()
-			defer streamsMutex.Unlock()
-			delete(streams, "chan/"+name)
-			return
-		}
-	}
+	Redis.HDel("lan/channels", name)
 }
 
 // SubscribeChannel subscribes the user to a channel.
 func (s *Session) SubscribeChannel(ch string) {
 	s.Subscribe("chan/" + ch)
-	s.Send(&packets.BanchoChannelJoinSuccess{ch})
+	s.Send(&packets.BanchoChannelJoinSuccess{Channel: ch})
 }
 
 // UnsubscribeChannel unsubscribes the user from a channel.
@@ -74,20 +61,8 @@ func (s *Session) UnsubscribeChannel(ch string) {
 // SendMessageToChannel broadcasts a BanchoSendMessage to all the members of a
 // channel.
 func SendMessageToChannel(m *packets.BanchoSendMessage) {
-	s, ok := streams["chan/"+m.Channel]
-	if !ok {
+	if !Redis.HExists("lan/channels", m.Channel).Val() {
 		return
 	}
-	s.SendExcept([]int32{m.SenderID}, m)
-}
-
-func init() {
-	AddChannel(Channel{
-		"#osu",
-		"General discussion about everything",
-	})
-	AddChannel(Channel{
-		"#announce",
-		"Probably not so important announcements.",
-	})
+	SessionCollection("chan/"+m.Channel).SendExcept([]int32{m.SenderID}, m)
 }

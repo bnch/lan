@@ -29,7 +29,7 @@ func (s Server) bancho(w http.ResponseWriter, r *http.Request) {
 	w.Header()["cho-protocol"] = []string{strconv.Itoa(handler.ProtocolVersion)}
 
 	tok := r.Header.Get("osu-token")
-	var sess *handler.Session
+	var sess handler.Session
 	if tok == "" {
 		br := bufio.NewReader(r.Body)
 		u, _ := br.ReadString('\n')
@@ -40,37 +40,29 @@ func (s Server) bancho(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if tok == "" {
-		sess.Mutex.RLock()
 		w.Header()["cho-token"] = []string{sess.Token}
-		sess.Mutex.RUnlock()
 	}
 
-	pks := make([]packets.Packetifier, 0, 10)
-Looper:
+	parts := make([]byte, 0, 1024*64)
 	for {
-		select {
-		case x := <-sess.Packets:
-			fmt.Printf("> %#v\n", x)
-			pks = append(pks, packets.Packetifier(x))
-		default:
-			break Looper
+		p := handler.Redis.LPop("lan/queues/" + sess.Token).Val()
+		if p == "" {
+			break
 		}
+		parts = append(parts, []byte(p)...)
 	}
 
-	encoded, err := packets.Packetify(pks)
-	if err != nil {
-		fmt.Println(err)
-	}
-	w.Write(encoded)
+	w.Write(parts)
 
 	//os.Stdout.WriteString("=> request done in " + time.Now().Sub(begin).String() + "\n")
 }
 
-func (s Server) banchoHandle(r *http.Request) *handler.Session {
-	sess := handler.Sessions.GetByToken(r.Header.Get("osu-token"))
-	if sess == nil {
+func (s Server) banchoHandle(r *http.Request) handler.Session {
+	sessPtr := handler.GetSession(r.Header.Get("osu-token"))
+	if sessPtr == nil {
 		return handler.LogoutTokenNotFound()
 	}
+	sess := *sessPtr
 	d, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("Error reading post body: %v\n", err)
