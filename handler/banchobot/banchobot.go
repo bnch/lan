@@ -13,23 +13,23 @@ var self handler.Session
 // Start initialises banchobot.
 func Start() {
 	prevSession := handler.GetSession(handler.Sessions.TokenFromUsername("BanchoBot"))
+	guid := handler.GenerateGUID()
 	if prevSession != nil {
-		self = *prevSession
-		go packetHandler()
-		return
+		guid = prevSession.Token
 	}
 	self = handler.Session{
 		Username: "BanchoBot",
 		UserID:   1,
-		Token:    handler.GenerateGUID(),
+		Token:    guid,
 		Admin:    true,
 		LastSeen: time.Now().Add(time.Hour * 24 * 365 * 10),
 		State: packets.OsuSendUserState{
-			Action: 2,
-			Text:   "with itself",
+			Action: 0,
 		},
 	}
-	handler.Sessions.Add(self)
+	if prevSession != nil {
+		handler.Sessions.Add(self)
+	}
 	handler.SaveSession(self)
 	go packetHandler()
 }
