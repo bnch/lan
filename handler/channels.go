@@ -45,16 +45,22 @@ func GetChannels() []Channel {
 // RemoveChannel removes a channel.
 func RemoveChannel(name string) {
 	Redis.HDel("lan/channels", name)
+	// TODO: Send BanchoChannelRevoked to all members, remove it from their
+	// collections, etc.
+}
+
+// ChannelExists checks whether a channel exists
+func ChannelExists(ch string) bool {
+	return Redis.HExists("lan/channels", ch).Val()
 }
 
 // SubscribeChannel subscribes the user to a channel.
-func (s *Session) SubscribeChannel(ch string) {
+func (s Session) SubscribeChannel(ch string) {
 	s.Subscribe("chan/" + ch)
-	s.Send(&packets.BanchoChannelJoinSuccess{Channel: ch})
 }
 
 // UnsubscribeChannel unsubscribes the user from a channel.
-func (s *Session) UnsubscribeChannel(ch string) {
+func (s Session) UnsubscribeChannel(ch string) {
 	s.Unsubscribe("chan/" + ch)
 }
 

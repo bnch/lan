@@ -30,7 +30,7 @@ type Session struct {
 }
 
 // Send sends a packets to the session.
-func (s *Session) Send(ps ...packets.Packet) {
+func (s Session) Send(ps ...packets.Packet) {
 	packetifiers := make([]packets.Packetifier, len(ps))
 	for i, p := range ps {
 		packetifiers[i] = packets.Packetifier(p)
@@ -45,12 +45,12 @@ func (s *Session) Send(ps ...packets.Packet) {
 
 // SendBytes sends bytes to the session to be send to the client. These are
 // usually packetified packets.
-func (s *Session) SendBytes(b []byte) {
+func (s Session) SendBytes(b []byte) {
 	Redis.RPush("lan/queues/"+s.Token, string(b))
 }
 
 // Permissions converts the bool Admin to osu!'s permissions.
-func (s *Session) Permissions() int32 {
+func (s Session) Permissions() int32 {
 	if s.Admin {
 		// all permissions
 		return 63
@@ -188,7 +188,7 @@ func SaveSession(sess Session) {
 }
 
 // Send sends packets to all members of the SessionCollection
-func (s *SessionCollection) Send(ps ...packets.Packet) {
+func (s SessionCollection) Send(ps ...packets.Packet) {
 	packetifiers := make([]packets.Packetifier, len(ps))
 	for i, p := range ps {
 		packetifiers[i] = packets.Packetifier(p)

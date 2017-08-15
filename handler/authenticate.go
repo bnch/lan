@@ -39,6 +39,8 @@ func Authenticate(username string, password string) Session {
 
 	sess.SubscribeChannel("#osu")
 	sess.SubscribeChannel("#announce")
+	sess.Send(&packets.BanchoChannelJoinSuccess{Channel: "#osu"},
+		&packets.BanchoChannelJoinSuccess{Channel: "#announce"})
 
 	go sess.SendUsers()
 

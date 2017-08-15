@@ -7,7 +7,7 @@ import (
 )
 
 // SendUsers sends to this session all the online users.
-func (s *Session) SendUsers() {
+func (s Session) SendUsers() {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println("critical:", err)
@@ -33,7 +33,7 @@ func (s *Session) SendUsers() {
 }
 
 // ToUserPresence converts a session to a packets.BanchoUserPresence
-func (s *Session) ToUserPresence() *packets.BanchoUserPresence {
+func (s Session) ToUserPresence() *packets.BanchoUserPresence {
 	return &packets.BanchoUserPresence{
 		ID:         s.UserID,
 		Name:       s.Username,
@@ -45,7 +45,7 @@ func (s *Session) ToUserPresence() *packets.BanchoUserPresence {
 }
 
 // ToHandleUserUpdate converts a session to a packets.BanchoHandleUserUpdate
-func (s *Session) ToHandleUserUpdate() *packets.BanchoHandleUserUpdate {
+func (s Session) ToHandleUserUpdate() *packets.BanchoHandleUserUpdate {
 	return &packets.BanchoHandleUserUpdate{
 		ID:              s.UserID,
 		Action:          s.State.Action,
