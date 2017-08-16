@@ -7,17 +7,18 @@ import (
 	ob "github.com/bnch/lan/osubinary"
 )
 
-// BanchoFriendList is a list of the friend of the user.
-type BanchoFriendList struct {
-	Friends []int32
+// OsuStartSpectating is sent by the osu! client when it wishes to start spectating
+// somebody.
+type OsuStartSpectating struct {
+	User int32
 }
 
-// Packetify encodes a BanchoFriendList into
+// Packetify encodes a OsuStartSpectating into
 // a byte slice.
-func (p BanchoFriendList) Packetify() ([]byte, error) {
+func (p OsuStartSpectating) Packetify() ([]byte, error) {
 	w := ob.NewWriter()
 
-	w.Int32Slice(p.Friends)
+	w.Int32(p.User)
 
 	data := w.Bytes()
 	_, err := w.End()
@@ -27,11 +28,11 @@ func (p BanchoFriendList) Packetify() ([]byte, error) {
 	return data, nil
 }
 
-// Depacketify decodes a BanchoFriendList.
-func (p *BanchoFriendList) Depacketify(b []byte) error {
+// Depacketify decodes a OsuStartSpectating.
+func (p *OsuStartSpectating) Depacketify(b []byte) error {
 	r := ob.NewReaderFromBytes(b)
 
-	p.Friends = r.Int32Slice()
+	p.User = r.Int32()
 
 	_, err := r.End()
 	return err

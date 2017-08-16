@@ -61,6 +61,31 @@ func (o *OsuReader) Uint32Slice() []uint32 {
 	return o.Reader.Uint32Slice(int(length))
 }
 
+// SpectateFrame represents a single frame of a replay, or in this case, of the
+// information sent to users through bancho.
+type SpectateFrame struct {
+	ButtonState byte
+	MouseX      float32
+	MouseY      float32
+	Time        int32
+}
+
+// SpectateFrameSlice reads multiple frames broadcasted to spectators.
+func (o *OsuReader) SpectateFrameSlice() []SpectateFrame {
+	length := o.Uint16()
+	sl := make([]SpectateFrame, length)
+	for i := uint16(0); i < length; i++ {
+		var frame SpectateFrame
+		frame.ButtonState = o.Byte()
+		o.Byte()
+		frame.MouseX = o.Float32()
+		frame.MouseY = o.Float32()
+		frame.Time = o.Int32()
+		sl[i] = frame
+	}
+	return sl
+}
+
 // SanityLimit is the maximum size of a packet.
 const SanityLimit = 1024 * 1024 * 5
 
@@ -135,6 +160,20 @@ func (o *OsuWriteChain) Int32Slice(s []int32) *OsuWriteChain {
 func (o *OsuWriteChain) Uint32Slice(s []uint32) *OsuWriteChain {
 	o.Uint16(uint16(len(s)))
 	o.WriteChain.Uint32Slice(s)
+	return o
+}
+
+// SpectateFrameSlice writes multiple SpectateFrames.
+func (o *OsuWriteChain) SpectateFrameSlice(fs []SpectateFrame) *OsuWriteChain {
+	o.Uint16(uint16(len(fs)))
+	for _, f := range fs {
+		o.
+			Byte(f.ButtonState).
+			Byte(0).
+			Float32(f.MouseX).
+			Float32(f.MouseY).
+			Int32(f.Time)
+	}
 	return o
 }
 

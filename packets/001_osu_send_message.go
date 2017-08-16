@@ -9,10 +9,10 @@ import (
 
 // OsuSendMessage sends a message through the osu! chat.
 type OsuSendMessage struct {
-	SenderName string
+	SenderName string // Sender's username, must be replaced server-side
 	Content string
 	Channel string
-	SenderID int32
+	SenderID int32 // Sender's ID, should be replaced server-side by actual user ID
 }
 
 // Packetify encodes a OsuSendMessage into

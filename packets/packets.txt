@@ -70,6 +70,41 @@ BanchoUserQuit tells clients that an user has exited the game.
 - ID int32
 - State byte, Gone = 0, OsuRemaining = 1, IRCRemaining = 2
 -------------------------------------------------------------------------------
+ID: 16, Name: OsuStartSpectating
+OsuStartSpectating is sent by the osu! client when it wishes to start spectating
+somebody.
+
+- User int32
+-------------------------------------------------------------------------------
+ID: 17, Name: OsuStopSpectating
+OsuStopSpectating is sent by the client when it wishes to stop spectating the
+user it is spectating.
+-------------------------------------------------------------------------------
+ID: 18, Name: OsuSpectateFrames
+OsuSpectateFrames is sent by the client, and contains the frames that must be
+sent to all the spectators of the user.
+
+- Extra int32
+- Frames []ob.SpectateFrame
+- Action byte
+- Time int32
+- ID byte
+- Count300 uint16
+- Count100 uint16
+- Count50 uint16
+- Geki uint16
+- Katu uint16
+- Miss uint16
+- TotalScore int32
+- MaxCombo uint16
+- CurrentCombo uint16
+- Perfect bool
+- HP byte
+- TagByte byte, ???
+- UsingScorev2 bool
+- ComboPortion float64, only if UsingScorev2 is true
+- BonusPortion float64, only if UsingScorev2 is true
+-------------------------------------------------------------------------------
 ID: 24, Name: BanchoAnnounce
 BanchoAnnounce is sent by bancho to notify the osu! clients of something.
 

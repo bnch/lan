@@ -9,7 +9,7 @@ import (
 
 // OsuExit is sent by the osu! client whenever the client closes
 type OsuExit struct {
-	Reason int32
+	Reason int32 // 0 if closing, 1 if updating
 }
 
 // Packetify encodes a OsuExit into

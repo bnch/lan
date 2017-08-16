@@ -9,10 +9,10 @@ import (
 
 // 
 type OsuSendPrivateMessage struct {
-	SenderName string
+	SenderName string // Sender's username
 	Content string
 	Channel string
-	SenderID int32
+	SenderID int32 // Sender's ID
 }
 
 // Packetify encodes a OsuSendPrivateMessage into

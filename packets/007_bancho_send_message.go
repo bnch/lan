@@ -10,10 +10,10 @@ import (
 // BanchoSendMessage is the serverside counterpart of OsuSendMessage. It simply
 // sends a message to a channel on osu!.
 type BanchoSendMessage struct {
-	SenderName string
+	SenderName string // Sender's username
 	Content string
 	Channel string
-	SenderID int32
+	SenderID int32 // Sender's ID
 }
 
 // Packetify encodes a BanchoSendMessage into

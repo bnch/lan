@@ -11,14 +11,14 @@ import (
 // need.
 type BanchoHandleUserUpdate struct {
 	ID int32
-	Action uint8
+	Action uint8 // afk, modding, playing, osudirect...
 	ActionText string
 	ActionMapMD5 string
 	ActionMods int32
 	ActionGameMode uint8
 	ActionBeatmapID uint32
 	RankedScore uint64
-	Accuracy float32
+	Accuracy float32 // 0.1337 = 13.37%
 	Playcount uint32
 	TotalScore uint64
 	Rank int32

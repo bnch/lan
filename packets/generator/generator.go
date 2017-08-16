@@ -40,7 +40,7 @@ import (
 var (
 	packetSeparator = regexp.MustCompile("^-{4,}$")
 	// https://regex101.com/r/sX3eH6/1
-	fieldDeclarationReg = regexp.MustCompile(`^- ([a-zA-Z_][a-zA-Z_0-9]*) ((:?\[\])?[a-zA-Z_][a-zA-Z_0-9]*)(?:, (.*))?$`)
+	fieldDeclarationReg = regexp.MustCompile(`^- ([a-zA-Z_][a-zA-Z_0-9]*) ((?:\[\])?[a-zA-Z_][a-zA-Z_\.0-9]*)(?:, (.*))?$`)
 )
 
 func main() {
@@ -270,7 +270,8 @@ func fieldsInReader(fs []fieldDeclaration) (x string) {
 }
 
 var specialCases = map[string]string{
-	"string": "BanchoString",
+	"string":             "BanchoString",
+	"[]ob.SpectateFrame": "SpectateFrameSlice",
 }
 
 func typeNameToOsuBinaryName(s string) string {
@@ -300,7 +301,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	
+
 	"github.com/bnch/lan/osubinary"
 )
 
@@ -354,7 +355,7 @@ func Depacketify(b []byte) ([]Packet, error) {
 		if err != nil {
 			return nil, err
 		}
-		if packet != nil {	
+		if packet != nil {
 			packets = append(packets, packet)
 		}
 	}

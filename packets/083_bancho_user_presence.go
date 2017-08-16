@@ -11,7 +11,7 @@ import (
 type BanchoUserPresence struct {
 	ID int32
 	Name string
-	UTCOffset uint8
+	UTCOffset uint8 // 24 looks like a good value
 	Country uint8
 	Privileges uint8
 	Longitude float32

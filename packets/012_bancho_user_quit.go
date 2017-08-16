@@ -10,7 +10,7 @@ import (
 // BanchoUserQuit tells clients that an user has exited the game.
 type BanchoUserQuit struct {
 	ID int32
-	State byte
+	State byte // Gone = 0, OsuRemaining = 1, IRCRemaining = 2
 }
 
 // Packetify encodes a BanchoUserQuit into

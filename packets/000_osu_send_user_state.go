@@ -10,7 +10,7 @@ import (
 // OsuSendUserState informs bancho about what's the user currently doing (playing,
 // listening, multiplaying what beatmap with what mods on what mode)
 type OsuSendUserState struct {
-	Action uint8
+	Action uint8 // afk, modding, playing, osudirect...
 	Text string
 	MapMD5 string
 	Mods int32

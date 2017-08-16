@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	
+
 	"github.com/bnch/lan/osubinary"
 )
 
@@ -41,6 +41,9 @@ func packetify(w *osubinary.OsuWriteChain, p Packetifier) error {
 	case *BanchoSendMessage: id = 7
 	case *BanchoHandleUserUpdate: id = 11
 	case *BanchoUserQuit: id = 12
+	case *OsuStartSpectating: id = 16
+	case *OsuStopSpectating: id = 17
+	case *OsuSpectateFrames: id = 18
 	case *BanchoAnnounce: id = 24
 	case *OsuSendPrivateMessage: id = 25
 	case *OsuChannelJoin: id = 63
@@ -89,7 +92,7 @@ func Depacketify(b []byte) ([]Packet, error) {
 		if err != nil {
 			return nil, err
 		}
-		if packet != nil {	
+		if packet != nil {
 			packets = append(packets, packet)
 		}
 	}
@@ -107,6 +110,9 @@ func depacketify(id uint16, packet []byte) (Packet, error) {
 	case 7: p = &BanchoSendMessage{}
 	case 11: p = &BanchoHandleUserUpdate{}
 	case 12: p = &BanchoUserQuit{}
+	case 16: p = &OsuStartSpectating{}
+	case 17: p = &OsuStopSpectating{}
+	case 18: p = &OsuSpectateFrames{}
 	case 24: p = &BanchoAnnounce{}
 	case 25: p = &OsuSendPrivateMessage{}
 	case 63: p = &OsuChannelJoin{}

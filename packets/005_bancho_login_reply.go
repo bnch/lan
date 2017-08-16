@@ -10,7 +10,7 @@ import (
 // BanchoLoginReply is a packet containing either an user ID or an authentication
 // error (see handler/authenticate.go).
 type BanchoLoginReply struct {
-	UserID int32
+	UserID int32 // may have negative values
 }
 
 // Packetify encodes a BanchoLoginReply into

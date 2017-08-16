@@ -10,7 +10,7 @@ import (
 // OsuUserPresenceRequest is a request to have a BanchoUserPresence of some
 // users.
 type OsuUserPresenceRequest struct {
-	IDs []int32 // []
+	IDs []int32
 }
 
 // Packetify encodes a OsuUserPresenceRequest into

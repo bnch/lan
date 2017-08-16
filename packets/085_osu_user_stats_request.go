@@ -9,7 +9,7 @@ import (
 
 // OsuUserStatsRequest is a request to have a BanchoHandleUserUpdate of some users.
 type OsuUserStatsRequest struct {
-	IDs []int32 // []
+	IDs []int32
 }
 
 // Packetify encodes a OsuUserStatsRequest into

@@ -10,7 +10,7 @@ import (
 // BanchoUserPresenceBundle is used to initially broadcast to an user the users
 // currently online on the server.
 type BanchoUserPresenceBundle struct {
-	IDs []int32 // []
+	IDs []int32
 }
 
 // Packetify encodes a BanchoUserPresenceBundle into
