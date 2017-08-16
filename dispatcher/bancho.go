@@ -2,21 +2,45 @@ package dispatcher
 
 import (
 	"bufio"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
-	"fmt"
-
-	"github.com/bnch/banchoreader/lib"
 	"github.com/bnch/lan/handler"
 	"github.com/bnch/lan/packets"
 )
 
-func (s Server) bancho(w http.ResponseWriter, r *http.Request) {
-	//begin := time.Now()
+func panicRecover() {
+	err := recover()
+	if err != nil {
+		fmt.Printf("Critical error! %v\n", err)
+	}
+}
 
+// exportQueue takes from the queue the packets it can fetch in 50 milliseconds.
+func exportQueue(token string) []byte {
+	parts := make([]byte, 0, 1024*64)
+
+	p := handler.Redis.BLPop(time.Millisecond*100, "lan/queues/"+token).Val()
+	if len(p) < 2 {
+		return nil
+	}
+	parts = append(parts, []byte(p[1])...)
+
+	for {
+		p := handler.Redis.LPop("lan/queues/" + token).Val()
+		if p == "" {
+			break
+		}
+		parts = append(parts, []byte(p)...)
+	}
+	return parts
+}
+
+func (s Server) bancho(w http.ResponseWriter, r *http.Request) {
 	defer panicRecover()
 
 	if r.Method != "POST" || r.UserAgent() != "osu!" {
@@ -43,18 +67,7 @@ func (s Server) bancho(w http.ResponseWriter, r *http.Request) {
 		w.Header()["cho-token"] = []string{sess.Token}
 	}
 
-	parts := make([]byte, 0, 1024*64)
-	for {
-		p := handler.Redis.LPop("lan/queues/" + sess.Token).Val()
-		if p == "" {
-			break
-		}
-		parts = append(parts, []byte(p)...)
-	}
-
-	w.Write(parts)
-
-	//os.Stdout.WriteString("=> request done in " + time.Now().Sub(begin).String() + "\n")
+	w.Write(exportQueue(sess.Token))
 }
 
 func (s Server) banchoHandle(r *http.Request) handler.Session {
@@ -75,13 +88,4 @@ func (s Server) banchoHandle(r *http.Request) handler.Session {
 	}
 	sess.Handle(pks)
 	return sess
-}
-
-var dumper = banchoreader.New()
-
-func panicRecover() {
-	err := recover()
-	if err != nil {
-		fmt.Printf("Critical error! %v\n", err)
-	}
 }
