@@ -81,6 +81,9 @@ func (s Server) banchoHandle(r *http.Request) handler.Session {
 		fmt.Printf("Error reading post body: %v\n", err)
 		return handler.LogoutTokenNotFound()
 	}
+
+	DumpPackets(d)
+
 	pks, err := packets.Depacketify(d)
 	if err != nil {
 		fmt.Printf("Error depacketifying: %v\n", err)

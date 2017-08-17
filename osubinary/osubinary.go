@@ -86,6 +86,24 @@ func (o *OsuReader) SpectateFrameSlice() []SpectateFrame {
 	return sl
 }
 
+// Scorev2Portion is a part of a replay frame that has parts sent conditionally.
+type Scorev2Portion struct {
+	UsingScorev2 bool
+	ComboPortion float64
+	BonusPortion float64
+}
+
+// Scorev2Portion decodes a Scorev2Portion.
+func (o *OsuReader) Scorev2Portion() Scorev2Portion {
+	var p Scorev2Portion
+	p.UsingScorev2 = o.Bool()
+	if p.UsingScorev2 {
+		p.ComboPortion = o.Float64()
+		p.BonusPortion = o.Float64()
+	}
+	return p
+}
+
 // SanityLimit is the maximum size of a packet.
 const SanityLimit = 1024 * 1024 * 5
 
@@ -173,6 +191,16 @@ func (o *OsuWriteChain) SpectateFrameSlice(fs []SpectateFrame) *OsuWriteChain {
 			Float32(f.MouseX).
 			Float32(f.MouseY).
 			Int32(f.Time)
+	}
+	return o
+}
+
+// Scorev2Portion writes a Scorev2Portion. I'm not in the mood for descriptive
+// comments today.
+func (o *OsuWriteChain) Scorev2Portion(p Scorev2Portion) *OsuWriteChain {
+	o.Bool(p.UsingScorev2)
+	if p.UsingScorev2 {
+		o.Float64(p.ComboPortion).Float64(p.BonusPortion)
 	}
 	return o
 }

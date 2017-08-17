@@ -7,9 +7,8 @@ import (
 	ob "github.com/bnch/lan/osubinary"
 )
 
-// OsuSpectateFrames is sent by the client, and contains the frames that must be
-// sent to all the spectators of the user.
-type OsuSpectateFrames struct {
+// BanchoSpectateFrames sends the client frames of the user they are spectating.
+type BanchoSpectateFrames struct {
 	Extra int32
 	Frames []ob.SpectateFrame
 	Action byte
@@ -31,9 +30,9 @@ type OsuSpectateFrames struct {
 	SomeUint16 uint16
 }
 
-// Packetify encodes a OsuSpectateFrames into
+// Packetify encodes a BanchoSpectateFrames into
 // a byte slice.
-func (p OsuSpectateFrames) Packetify() ([]byte, error) {
+func (p BanchoSpectateFrames) Packetify() ([]byte, error) {
 	w := ob.NewWriter()
 
 	w.Int32(p.Extra)
@@ -64,8 +63,8 @@ func (p OsuSpectateFrames) Packetify() ([]byte, error) {
 	return data, nil
 }
 
-// Depacketify decodes a OsuSpectateFrames.
-func (p *OsuSpectateFrames) Depacketify(b []byte) error {
+// Depacketify decodes a BanchoSpectateFrames.
+func (p *BanchoSpectateFrames) Depacketify(b []byte) error {
 	r := ob.NewReaderFromBytes(b)
 
 	p.Extra = r.Int32()

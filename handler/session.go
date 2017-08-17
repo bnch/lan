@@ -21,12 +21,13 @@ var AdminPassword string
 
 // Session is an user's session on Bancho.
 type Session struct {
-	Username string
-	UserID   int32
-	Token    string
-	Admin    bool
-	LastSeen time.Time
-	State    packets.OsuSendUserState
+	Username   string
+	UserID     int32
+	Token      string
+	Admin      bool
+	LastSeen   time.Time
+	State      packets.OsuSendUserState
+	Spectating string
 }
 
 // Send sends a packets to the session.
@@ -85,6 +86,7 @@ func (s Session) In(stream string) bool {
 func (s Session) Dispose() {
 	Redis.Del("lan/queues/" + s.Token)
 	Redis.Del("lan/sessions/" + s.Token)
+	SessionCollection("spec/" + s.Token).Destroy()
 	Sessions.Delete(s)
 	for _, x := range Redis.SMembers("lan/my_collections/" + s.Token).Val() {
 		SessionCollection(x).Delete(s)
@@ -94,7 +96,7 @@ func (s Session) Dispose() {
 
 // NewSession creates a new session.
 func NewSession(username string, passMD5 string) Session {
-	if Sessions.TokenFromUsername(username) != "" {
+	if Sessions.TokenFromUsername(username) != "" || username == "BanchoBot" {
 		return Session{
 			UserID: authFailed,
 			Token:  GenerateGUID(),
@@ -167,6 +169,18 @@ func (s SessionCollection) AllUserIDs() []int32 {
 	}
 
 	return ids
+}
+
+// Destroy removes from redis all references to this SessionCollection.
+func (s SessionCollection) Destroy() {
+	for _, token := range Redis.SMembers("lan/session_list/" + string(s)).Val() {
+		Redis.SRem("lan/my_collections/"+token, string(s))
+	}
+	Redis.Del(
+		"lan/session_list/"+string(s),
+		"lan/session_lookup_tables/username/"+string(s),
+		"lan/session_lookup_tables/id/"+string(s),
+	)
 }
 
 // GetSession retrieves a Session by knowing its token.
@@ -246,6 +260,7 @@ func disposer() {
 				continue
 			}
 			if time.Now().Sub(sess.LastSeen) > time.Second*120 {
+				fmt.Println(">", sess.Username, "timed out")
 				sess.Dispose()
 				Sessions.Send(&packets.BanchoUserQuit{ID: sess.UserID, State: 0})
 			}

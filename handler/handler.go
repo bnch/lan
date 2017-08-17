@@ -15,21 +15,27 @@ var Redis *redis.Client
 
 // Handle takes a set of packets, handles them and then pushes the results
 func (s Session) Handle(pks []packets.Packet) {
+	defer func() {
+		err := recover()
+		if err != nil {
+			fmt.Printf("Error while handling packets: %#v\n", err)
+		}
+	}()
+
 	s.LastSeen = time.Now()
 	SaveSession(s)
 
 	for _, p := range pks {
-		go s.handle(p)
+		s.handle(p)
+
+		newS := GetSession(s.Token)
+		if newS != nil {
+			s = *newS
+		}
 	}
 }
 
 func (s Session) handle(p packets.Packet) {
-	defer func() {
-		err := recover()
-		if err != nil {
-			fmt.Printf("Error while handling a %T: %v\n%#v\n", p, err, p)
-		}
-	}()
 	fmt.Printf("< %#v\n", p)
 
 	f := handlers[reflect.TypeOf(p).Elem().Name()]

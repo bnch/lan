@@ -70,6 +70,39 @@ BanchoUserQuit tells clients that an user has exited the game.
 - ID int32
 - State byte, Gone = 0, OsuRemaining = 1, IRCRemaining = 2
 -------------------------------------------------------------------------------
+ID: 13, Name: BanchoSpectatorJoined
+BanchoSpectatorJoined tells the client that there is a new spectator.
+
+- User int32
+-------------------------------------------------------------------------------
+ID: 14, Name: BanchoSpectatorLeft
+BanchoSpectatorLeft tells the client that a spectator has left.
+
+- User int32
+-------------------------------------------------------------------------------
+ID: 15, Name: BanchoSpectateFrames
+BanchoSpectateFrames sends the client frames of the user they are spectating.
+
+- Extra int32
+- Frames []ob.SpectateFrame
+- Action byte
+- Time int32
+- ID byte
+- Count300 uint16
+- Count100 uint16
+- Count50 uint16
+- Geki uint16
+- Katu uint16
+- Miss uint16
+- TotalScore int32
+- MaxCombo uint16
+- CurrentCombo uint16
+- Perfect bool
+- HP byte
+- TagByte byte, ???
+- Scorev2Portion ob.Scorev2Portion
+- SomeUint16 uint16
+-------------------------------------------------------------------------------
 ID: 16, Name: OsuStartSpectating
 OsuStartSpectating is sent by the osu! client when it wishes to start spectating
 somebody.
@@ -101,9 +134,18 @@ sent to all the spectators of the user.
 - Perfect bool
 - HP byte
 - TagByte byte, ???
-- UsingScorev2 bool
-- ComboPortion float64, only if UsingScorev2 is true
-- BonusPortion float64, only if UsingScorev2 is true
+- Scorev2Portion ob.Scorev2Portion
+- SomeUint16 uint16
+-------------------------------------------------------------------------------
+ID: 21, Name: OsuCantSpectate
+OsuCantSpectate is sent by the client when they don't have the beatmap the host
+is playing.
+-------------------------------------------------------------------------------
+ID: 22, Name: BanchoSpectatorCantSpectate
+BanchoSpectatorCantSpectate is sent when an user who is spectating you doesn't
+have the beatmap you are playing
+
+- User int32
 -------------------------------------------------------------------------------
 ID: 24, Name: BanchoAnnounce
 BanchoAnnounce is sent by bancho to notify the osu! clients of something.
@@ -116,6 +158,18 @@ ID: 25, Name: OsuSendPrivateMessage
 - Content string
 - Channel string
 - SenderID int32, Sender's ID
+-------------------------------------------------------------------------------
+ID: 42, Name: BanchoFellowSpectatorJoined
+BanchoFellowSpectatorJoined is sent to all other spectators of an user when they
+connect (except to the new spectator.)
+
+- User int32
+-------------------------------------------------------------------------------
+ID: 43, Name: BanchoFellowSpectatorLeft
+BanchoFellowSpectatorLeft is sent to all other spectators of an user when they
+aren't spectating the user anymore.
+
+- User int32
 -------------------------------------------------------------------------------
 ID: 63, Name: OsuChannelJoin
 OsuChannelJoin is sent by the osu! client whenever it wishes to join a channel.

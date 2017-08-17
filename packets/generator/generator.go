@@ -272,6 +272,7 @@ func fieldsInReader(fs []fieldDeclaration) (x string) {
 var specialCases = map[string]string{
 	"string":             "BanchoString",
 	"[]ob.SpectateFrame": "SpectateFrameSlice",
+	"ob.Scorev2Portion":  "Scorev2Portion",
 }
 
 func typeNameToOsuBinaryName(s string) string {
