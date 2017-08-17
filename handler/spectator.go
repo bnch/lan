@@ -91,10 +91,22 @@ func spectateFrames(p *packets.OsuSpectateFrames, s Session) {
 	SessionCollection("spec/"+s.Token).SendExcept([]int32{s.UserID}, &converted)
 }
 
+func cantSpectate(p *packets.OsuCantSpectate, s Session) {
+	if s.Spectating == "" {
+		return
+	}
+	target := GetSession(s.Spectating)
+	if target == nil {
+		return
+	}
+	target.Send(&packets.BanchoSpectatorCantSpectate{User: s.UserID})
+}
+
 func init() {
 	RegisterHandlers(
 		startSpectating,
 		stopSpectating,
 		spectateFrames,
+		cantSpectate,
 	)
 }
