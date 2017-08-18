@@ -153,11 +153,72 @@ BanchoAnnounce is sent by bancho to notify the osu! clients of something.
 - Message string
 -------------------------------------------------------------------------------
 ID: 25, Name: OsuSendPrivateMessage
+OsuSendPrivateMessage is a request to send a private message to an user.
+The target is specified in the field "Channel".
 
 - SenderName string, Sender's username
 - Content string
 - Channel string
 - SenderID int32, Sender's ID
+-------------------------------------------------------------------------------
+ID: 26, Name: BanchoMatchUpdate
+BanchoMatchUpdate is sent when a match has been updated in the mp lobby.
+
+- ID int32
+- InProgress bool
+- MatchType byte
+- ActiveMods uint32
+- Name string
+- Password string
+- BeatmapName string
+- BeatmapID int32
+- BeatmapChecksum string
+- SlotStatuses [16]byte
+- SlotTeams [16]byte
+- SlotUsers [16]int32
+- Host int32
+- PlayMode byte
+- MatchScoringType byte
+- MatchTeamType byte
+- Freemod ob.Freemod
+- Seed int32
+-------------------------------------------------------------------------------
+ID: 27, Name: BanchoMatchNew
+BanchoMatchNew is sent when an user joins a multiplayer lobby, for every match
+currently being played.
+
+- ID int32
+- InProgress bool
+- MatchType byte
+- ActiveMods uint32
+- Name string
+- Password string
+- BeatmapName string
+- BeatmapID int32
+- BeatmapChecksum string
+- SlotStatuses [16]byte
+- SlotTeams [16]byte
+- SlotUsers [16]int32
+- Host int32
+- PlayMode byte
+- MatchScoringType byte
+- MatchTeamType byte
+- Freemod ob.Freemod
+- Seed int32
+-------------------------------------------------------------------------------
+ID: 28, Name: BanchoMatchDisband
+BanchoMatchDisband tells a user in the lobby or in the match itself that the
+match has been disbanded. This is also sent in response to an user requesting to
+leave the match.
+
+- Match int32
+-------------------------------------------------------------------------------
+ID: 29, Name: OsuLobbyPart
+OsuLobbyPart requests to leave the multiplayer lobby and not get any more
+updates about the lobby.
+-------------------------------------------------------------------------------
+ID: 30, Name: OsuLobbyJoin
+OsuLobbyJoin requests to join the multiplayer lobby.
 -------------------------------------------------------------------------------
 ID: 42, Name: BanchoFellowSpectatorJoined
 BanchoFellowSpectatorJoined is sent to all other spectators of an user when they

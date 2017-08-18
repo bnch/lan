@@ -104,6 +104,21 @@ func (o *OsuReader) Scorev2Portion() Scorev2Portion {
 	return p
 }
 
+// Freemod specifies the settings of freemod if it's enabled in a multiplayer
+// match.
+type Freemod struct {
+	Enabled    bool
+	PlayerMods [16]int32
+}
+
+// Freemod reads the freemod settings from the reader.
+func (o *OsuReader) Freemod() Freemod {
+	var f Freemod
+	f.Enabled = o.Bool()
+	copy(f.PlayerMods[:], o.Reader.Int32Slice(16))
+	return f
+}
+
 // SanityLimit is the maximum size of a packet.
 const SanityLimit = 1024 * 1024 * 5
 
@@ -202,6 +217,14 @@ func (o *OsuWriteChain) Scorev2Portion(p Scorev2Portion) *OsuWriteChain {
 	if p.UsingScorev2 {
 		o.Float64(p.ComboPortion).Float64(p.BonusPortion)
 	}
+	return o
+}
+
+// Freemod writes the freemod settings in the WriteChain.
+func (o *OsuWriteChain) Freemod(f Freemod) *OsuWriteChain {
+	o.WriteChain.
+		Bool(f.Enabled).
+		Int32Slice(f.PlayerMods[:])
 	return o
 }
 

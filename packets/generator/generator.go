@@ -40,7 +40,7 @@ import (
 var (
 	packetSeparator = regexp.MustCompile("^-{4,}$")
 	// https://regex101.com/r/sX3eH6/1
-	fieldDeclarationReg = regexp.MustCompile(`^- ([a-zA-Z_][a-zA-Z_0-9]*) ((?:\[\])?[a-zA-Z_][a-zA-Z_\.0-9]*)(?:, (.*))?$`)
+	fieldDeclarationReg = regexp.MustCompile(`^- ([a-zA-Z_][a-zA-Z_0-9]*) ((?:\[(\d*)\])?[a-zA-Z_][a-zA-Z_\.0-9]*)(?:, (.*))?$`)
 )
 
 func main() {
@@ -140,6 +140,7 @@ type fieldDeclaration struct {
 	FieldName   string
 	Type        string
 	Description string
+	ArraySize   *int
 }
 
 func (p *packetDeclaration) AddField(s string) {
@@ -147,10 +148,20 @@ func (p *packetDeclaration) AddField(s string) {
 	if len(res) == 0 {
 		return
 	}
+
+	var arraySize *int
+	if res[3] != "" {
+		size, err := strconv.Atoi(res[3])
+		if err == nil {
+			arraySize = &size
+		}
+	}
+
 	p.Fields = append(p.Fields, fieldDeclaration{
 		FieldName:   strings.TrimSpace(res[1]),
 		Type:        strings.TrimSpace(res[2]),
-		Description: strings.TrimSpace(res[3]),
+		Description: strings.TrimSpace(res[4]),
+		ArraySize:   arraySize,
 	})
 }
 
@@ -258,30 +269,43 @@ func fieldsInStruct(fs []fieldDeclaration) (x string) {
 }
 func fieldsInWriter(fs []fieldDeclaration) (x string) {
 	for _, f := range fs {
-		x += fmt.Sprintf("\tw.%s(p.%s)\n", typeNameToOsuBinaryName(f.Type), f.FieldName)
+		var additional string
+		if f.ArraySize != nil {
+			additional = "[:]"
+		}
+		x += fmt.Sprintf("\tw.%s(p.%s%s)\n", typeNameToOsuBinaryName(f.Type), f.FieldName, additional)
 	}
 	return
 }
 func fieldsInReader(fs []fieldDeclaration) (x string) {
 	for _, f := range fs {
-		x += fmt.Sprintf("\tp.%s = r.%s()\n", f.FieldName, typeNameToOsuBinaryName(f.Type))
+		if f.ArraySize == nil {
+			// we don't have an array size
+			x += fmt.Sprintf("\tp.%s = r.%s()\n", f.FieldName, typeNameToOsuBinaryName(f.Type))
+		} else {
+			x += fmt.Sprintf("\tcopy(p.%s[:], r.Reader.%s(%d))\n", f.FieldName, typeNameToOsuBinaryName(f.Type), *f.ArraySize)
+		}
 	}
 	return x
 }
 
 var specialCases = map[string]string{
-	"string":             "BanchoString",
-	"[]ob.SpectateFrame": "SpectateFrameSlice",
-	"ob.Scorev2Portion":  "Scorev2Portion",
+	"string": "BanchoString",
 }
 
 func typeNameToOsuBinaryName(s string) string {
 	if c, exist := specialCases[s]; exist {
 		return c
 	}
+
+	s = strings.TrimPrefix(s, "ob.")
+	if strings.HasPrefix(s, "[]ob.") {
+		s = "[]" + s[5:]
+	}
+
 	var isSlice bool
-	if len(s) > 2 && s[:2] == "[]" {
-		s = s[2:]
+	if strings.Contains(s, "]") {
+		s = s[strings.Index(s, "]")+1:]
 		isSlice = true
 	}
 	newS := []byte(s)

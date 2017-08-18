@@ -7,7 +7,8 @@ import (
 	ob "github.com/bnch/lan/osubinary"
 )
 
-// 
+// OsuSendPrivateMessage is a request to send a private message to an user.
+// The target is specified in the field "Channel".
 type OsuSendPrivateMessage struct {
 	SenderName string // Sender's username
 	Content string
